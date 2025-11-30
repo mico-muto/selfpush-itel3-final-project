@@ -19,4 +19,8 @@ const options = {
   apis: ['./server.js', "./routes/*.js"],
 };
 
+<<<<<<< HEAD
 module.exports = swaggerJSDoc(options);
+=======
+module.exports = swaggerJSDoc(options);
+>>>>>>> 3bb2aca4528d1547e48569374799f4f8fdc96fef
