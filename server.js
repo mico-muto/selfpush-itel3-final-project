@@ -40,20 +40,6 @@ app.use(
   })
 );
 
-// ====== API Authentication Middleware ======
-const authenticateApiKey = (req, res, next) => {
-    // Check for the API Key in the 'x-api-key' header
-    const apiKey = req.header('x-api-key');
-    
-    // Compare the received key to the secret key stored in .env
-    if (!apiKey || apiKey !== process.env.API_KEY_SECRET) {
-        return res.status(401).json({ 
-            message: 'Invalid or missing API Key.' 
-        });
-    }
-    
-    next();
-};
 
 // ====== Mongoose Schemas & Models ======
 
@@ -102,7 +88,7 @@ const Playback = mongoose.model('Playback', PlaybackSchema);
 
 // Root
 app.get('/', (req, res) => res.send('Playlist API is running!'));
-app.use(authenticateApiKey);
+
 
 // ==============================
 // TRACK ROUTES 🎶 (New Dedicated Section)
