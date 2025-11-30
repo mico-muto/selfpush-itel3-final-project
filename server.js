@@ -8,12 +8,18 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ====== Middleware ======
 app.use(cors());
 app.use(express.json());
+
+// Docs Route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ====== Mongoose Schemas & Models ======H
 
@@ -65,6 +71,44 @@ app.get('/', (req, res) => res.send('✅ Playlist API is running!'));
 // PLAYLIST ROUTES
 // ==============================
 
+/**
+ * @swagger
+ * tags:
+ *   name: Playlists
+ *   description: Playlist management
+ */
+
+/**
+ * @swagger
+ * /api/v1/playlists:
+ *   get:
+ *     summary: Get all playlists (optionally filter by userId)
+ *     tags: [Playlists]
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         description: Filter playlists by user ID
+ *     responses:
+ *       200:
+ *         description: List of playlists
+ *         content:
+ *           application/json:
+ *             example:
+ *               - _id: "64f123abc456def789012345"
+ *                 name: "My Playlist"
+ *                 description: "Favorite songs"
+ *                 userId: "64f123abc456def789012345"
+ *                 tracks: []
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Server error"
+ */
+
 // GET all playlists (optionally by user)
 app.get('/api/v1/playlists', async (req, res) => {
   try {
@@ -75,6 +119,38 @@ app.get('/api/v1/playlists', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+/**
+ * @swagger
+ * /api/v1/playlists/{id}:
+ *   get:
+ *     summary: Get one playlist by ID
+ *     tags: [Playlists]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Playlist ID
+ *     responses:
+ *       200:
+ *         description: Playlist data
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: "64f123abc456def789012345"
+ *               name: "My Playlist"
+ *               description: "Favorite songs"
+ *               userId: "64f123abc456def789012345"
+ *               tracks: []
+ *       404:
+ *         description: Playlist not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Playlist not found"
+ */
 
 // GET one playlist by ID
 app.get('/api/v1/playlists/:id', async (req, res) => {
@@ -87,6 +163,39 @@ app.get('/api/v1/playlists/:id', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/playlists:
+ *   post:
+ *     summary: Create a new playlist
+ *     tags: [Playlists]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             name: "New Playlist"
+ *             description: "My favorite tracks"
+ *             userId: "64f123abc456def789012345"
+ *     responses:
+ *       201:
+ *         description: Playlist created successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: "64f123abc456def789012345"
+ *               name: "New Playlist"
+ *               description: "My favorite tracks"
+ *               userId: "64f123abc456def789012345"
+ *               tracks: []
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Playlist validation failed"
+ */
+
 // POST create new playlist
 app.post('/api/v1/playlists', async (req, res) => {
   try {
@@ -98,6 +207,51 @@ app.post('/api/v1/playlists', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/playlists/{id}:
+ *   put:
+ *     summary: Update playlist details
+ *     tags: [Playlists]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Playlist ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             name: "Updated Playlist"
+ *             description: "Updated description"
+ *     responses:
+ *       200:
+ *         description: Playlist updated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: "64f123abc456def789012345"
+ *               name: "Updated Playlist"
+ *               description: "Updated description"
+ *               userId: "64f123abc456def789012345"
+ *               tracks: []
+ *       404:
+ *         description: Playlist not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Playlist not found"
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid data"
+ */
+
 // PUT update playlist details
 app.put('/api/v1/playlists/:id', async (req, res) => {
   try {
@@ -108,6 +262,34 @@ app.put('/api/v1/playlists/:id', async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+
+/**
+ * @swagger
+ * /api/v1/playlists/{id}:
+ *   delete:
+ *     summary: Delete a playlist
+ *     tags: [Playlists]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Playlist ID
+ *     responses:
+ *       200:
+ *         description: Playlist deleted
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Playlist deleted"
+ *       404:
+ *         description: Playlist not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Playlist not found"
+ */
 
 // DELETE a playlist
 app.delete('/api/v1/playlists/:id', async (req, res) => {
@@ -124,6 +306,43 @@ app.delete('/api/v1/playlists/:id', async (req, res) => {
 // TRACK ROUTES (within playlists)
 // ==============================
 
+/**
+ * @swagger
+ * tags:
+ *   name: Tracks
+ *   description: Manage tracks within playlists
+ */
+
+/**
+ * @swagger
+ * /api/v1/playlists/{id}/tracks:
+ *   get:
+ *     summary: Get all tracks in a playlist
+ *     tags: [Tracks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Playlist ID
+ *     responses:
+ *       200:
+ *         description: List of tracks
+ *         content:
+ *           application/json:
+ *             example:
+ *               - trackId: "64f124abc456def789012345"
+ *                 order: 1
+ *                 addedAt: "2025-11-30T12:00:00.000Z"
+ *       404:
+ *         description: Playlist not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Playlist not found"
+ */
+
 // GET all tracks in a playlist
 app.get('/api/v1/playlists/:id/tracks', async (req, res) => {
   try {
@@ -134,6 +353,47 @@ app.get('/api/v1/playlists/:id/tracks', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+/**
+ * @swagger
+ * /api/v1/playlists/{id}/tracks:
+ *   post:
+ *     summary: Add a new track to playlist
+ *     tags: [Tracks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Playlist ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             title: "Song Title"
+ *             artist: "Artist Name"
+ *             album: "Album Name"
+ *             duration: 240
+ *     responses:
+ *       201:
+ *         description: Track added successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: "64f124abc456def789012345"
+ *               title: "Song Title"
+ *               artist: "Artist Name"
+ *               album: "Album Name"
+ *               duration: 240
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid track data"
+ */
 
 // POST add a new track to playlist
 app.post('/api/v1/playlists/:id/tracks', async (req, res) => {
@@ -153,6 +413,55 @@ app.post('/api/v1/playlists/:id/tracks', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/playlists/{id}/tracks/{trackId}:
+ *   put:
+ *     summary: Update track details (order, metadata)
+ *     tags: [Tracks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Playlist ID
+ *       - in: path
+ *         name: trackId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Track ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             order: 2
+ *             metadata: { genre: "Rock" }
+ *     responses:
+ *       200:
+ *         description: Track updated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               trackId: "64f124abc456def789012345"
+ *               order: 2
+ *               metadata: { genre: "Rock" }
+ *       404:
+ *         description: Playlist or Track not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Track not found in playlist"
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid track data"
+ */
+
 // PUT update track details (order, metadata)
 app.put('/api/v1/playlists/:id/tracks/:trackId', async (req, res) => {
   try {
@@ -169,6 +478,40 @@ app.put('/api/v1/playlists/:id/tracks/:trackId', async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+
+/**
+ * @swagger
+ * /api/v1/playlists/{id}/tracks/{trackId}:
+ *   delete:
+ *     summary: Remove track from playlist
+ *     tags: [Tracks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Playlist ID
+ *       - in: path
+ *         name: trackId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Track ID
+ *     responses:
+ *       200:
+ *         description: Track removed successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Track removed from playlist"
+ *       404:
+ *         description: Playlist or Track not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Track not found in playlist"
+ */
 
 // DELETE remove track from playlist
 app.delete('/api/v1/playlists/:id/tracks/:trackId', async (req, res) => {
@@ -189,6 +532,40 @@ app.delete('/api/v1/playlists/:id/tracks/:trackId', async (req, res) => {
 // PLAYBACK ROUTES
 // ==============================
 
+/**
+ * @swagger
+ * tags:
+ *   name: Playback
+ *   description: Manage playback records
+ */
+
+/**
+ * @swagger
+ * /api/v1/playback:
+ *   get:
+ *     summary: Get the last played track
+ *     tags: [Playback]
+ *     responses:
+ *       200:
+ *         description: Last playback record
+ *         content:
+ *           application/json:
+ *             example:
+ *               - _id: "64f125abc456def789012345"
+ *                 userId: "64f123abc456def789012345"
+ *                 trackId: "64f124abc456def789012345"
+ *                 position: 120
+ *                 isPlaying: true
+ *                 startedAt: "2025-11-30T12:00:00.000Z"
+ *                 updatedAt: "2025-11-30T12:05:00.000Z"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Server error"
+ */
+
 // GET last played track
 app.get('/api/v1/playback', async (req, res) => {
   try {
@@ -198,6 +575,42 @@ app.get('/api/v1/playback', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+/**
+ * @swagger
+ * /api/v1/playback:
+ *   post:
+ *     summary: Save a new playback record
+ *     tags: [Playback]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             userId: "64f123abc456def789012345"
+ *             trackId: "64f124abc456def789012345"
+ *             position: 0
+ *             isPlaying: true
+ *     responses:
+ *       201:
+ *         description: Playback record created
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: "64f125abc456def789012345"
+ *               userId: "64f123abc456def789012345"
+ *               trackId: "64f124abc456def789012345"
+ *               position: 0
+ *               isPlaying: true
+ *               startedAt: "2025-11-30T12:00:00.000Z"
+ *               updatedAt: "2025-11-30T12:00:00.000Z"
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid playback data"
+ */
 
 // POST save new playback record
 app.post('/api/v1/playback', async (req, res) => {
@@ -210,6 +623,53 @@ app.post('/api/v1/playback', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/playback/{id}:
+ *   put:
+ *     summary: Update playback info
+ *     tags: [Playback]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Playback record ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             position: 150
+ *             isPlaying: false
+ *     responses:
+ *       200:
+ *         description: Playback record updated
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: "64f125abc456def789012345"
+ *               userId: "64f123abc456def789012345"
+ *               trackId: "64f124abc456def789012345"
+ *               position: 150
+ *               isPlaying: false
+ *               startedAt: "2025-11-30T12:00:00.000Z"
+ *               updatedAt: "2025-11-30T12:02:30.000Z"
+ *       404:
+ *         description: Playback not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Playback not found"
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid data"
+ */
+
 // PUT update playback info
 app.put('/api/v1/playback/:id', async (req, res) => {
   try {
@@ -220,6 +680,40 @@ app.put('/api/v1/playback/:id', async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+
+/**
+ * @swagger
+ * /api/v1/playback/{id}:
+ *   delete:
+ *     summary: Delete a playback record
+ *     tags: [Playback]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Playback record ID
+ *     responses:
+ *       200:
+ *         description: Playback record deleted
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Playback record deleted"
+ *       404:
+ *         description: Playback not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Playback not found"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Server error"
+ */
 
 // DELETE playback record
 app.delete('/api/v1/playback/:id', async (req, res) => {
