@@ -16,7 +16,7 @@ const swaggerDefinition = {
 
 const options = {
   swaggerDefinition,
-  apis: ['./server.js'],
+  apis: ['./server.js', "./routes/*.js"],
 };
 
 module.exports = swaggerJSDoc(options);
