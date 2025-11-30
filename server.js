@@ -8,7 +8,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
-const swaggerDocument = require('./swagger.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -89,7 +88,6 @@ const Playback = mongoose.model('Playback', PlaybackSchema);
 
 // Root
 app.get('/', (req, res) => res.send('Playlist API is running!'));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 // ==============================
