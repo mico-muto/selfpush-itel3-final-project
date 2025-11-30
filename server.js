@@ -19,7 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 // Docs Route
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // ====== Mongoose Schemas & Models ======H
 

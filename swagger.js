@@ -11,12 +11,15 @@ const swaggerDefinition = {
     {
       url: 'http://localhost:3000',
     },
+    {
+      url: 'https://itel3-final-deployment.vercel.app',
+    },
   ],
 };
 
 const options = {
   swaggerDefinition,
-  apis: ['./server.js', "./routes/*.js"],
+  apis: ['./server.js'],
 };
 
 module.exports = swaggerJSDoc(options);
