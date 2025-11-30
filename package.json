@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "name": "appdev-api",
-=======
   "name": "final-project",
->>>>>>> 3bb2aca4528d1547e48569374799f4f8fdc96fef
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -14,21 +10,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-<<<<<<< HEAD
-  "type": "commonjs",
-=======
->>>>>>> 3bb2aca4528d1547e48569374799f4f8fdc96fef
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-<<<<<<< HEAD
-    "helmet": "^8.1.0",
-    "mongoose": "^8.19.2"
-=======
     "mongoose": "^9.0.0",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
->>>>>>> 3bb2aca4528d1547e48569374799f4f8fdc96fef
+    "swagger-ui-express": "^5.0.1",
+    "helmet": "^8.1.0"
   }
 }
