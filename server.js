@@ -24,22 +24,22 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(
   helmet.hsts({
-    maxAge: 31536000, 
+    maxAge: 31536000,
     includeSubDomains: true,
     preload: true
   })
 );
 
-// CSP Configuration (Strict for an API)
+// CSP Configuration
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"], 
-      styleSrc: ["'self'"], 
-      imgSrc: ["'self'", "data:"], 
-      connectSrc: ["'self'"], 
-      objectSrc: ["'none'"],  
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+      objectSrc: ["'none'"],
       baseUri: ["'self'"],
     },
   })
@@ -63,7 +63,6 @@ const Track = mongoose.model('Track', TrackSchema);
 const PlaylistSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: String,
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   tracks: [
     {
       trackId: { type: mongoose.Schema.Types.ObjectId, ref: 'Track' },
@@ -78,7 +77,6 @@ const Playlist = mongoose.model('Playlist', PlaylistSchema);
 
 // Playback Schema
 const PlaybackSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   trackId: { type: mongoose.Schema.Types.ObjectId, ref: 'Track' },
   position: Number, // current playback position in seconds
   isPlaying: { type: Boolean, default: true },
@@ -93,16 +91,12 @@ const Playback = mongoose.model('Playback', PlaybackSchema);
 app.get('/', (req, res) => res.send('✅ Playlist API is running!'));
 
 // ==============================
-<<<<<<< HEAD
-// PLAYLIST ROUTES
-=======
-// TRACK ROUTES 🎶 (New Dedicated Section)
+// TRACK ROUTES 🎶
 // ==============================
 
 // GET all tracks
 app.get('/api/v1/tracks', async (req, res) => {
     try {
-        // Option to add search/filter logic here if needed
         const tracks = await Track.find(); 
         res.json(tracks);
     } catch (err) {
@@ -121,7 +115,7 @@ app.get('/api/v1/tracks/:id', async (req, res) => {
     }
 });
 
-// POST create a new track (Track now exists independently)
+// POST create a new track
 app.post('/api/v1/tracks', async (req, res) => {
     try {
         const track = new Track(req.body);
@@ -143,12 +137,11 @@ app.put('/api/v1/tracks/:id', async (req, res) => {
     }
 });
 
-// DELETE a track (Might break playlists, but for now, simple delete)
+// DELETE a track
 app.delete('/api/v1/tracks/:id', async (req, res) => {
     try {
         const track = await Track.findByIdAndDelete(req.params.id);
         if (!track) return res.status(404).json({ message: 'Track not found' });
-
         res.json({ message: 'Track deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -158,14 +151,13 @@ app.delete('/api/v1/tracks/:id', async (req, res) => {
 
 // ==============================
 // PLAYLIST ROUTES 🎧
->>>>>>> 3fc3875c6242ece4fbf8b68cc5c226c45b74c19d
 // ==============================
 
-// GET all playlists (optionally by user)
+// GET all playlists (REMOVED USERID FILTER)
 app.get('/api/v1/playlists', async (req, res) => {
   try {
-    const filter = req.query.userId ? { userId: req.query.userId } : {};
-    const playlists = await Playlist.find(filter).populate('tracks.trackId');
+    // Simply return all playlists found in the database
+    const playlists = await Playlist.find().populate('tracks.trackId');
     res.json(playlists);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -231,22 +223,17 @@ app.get('/api/v1/playlists/:id/tracks', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-// POST add a new track to playlist (MODIFIED FOR FLEXIBILITY)
-=======
-// POST add an EXISTING track to playlist 
->>>>>>> 3fc3875c6242ece4fbf8b68cc5c226c45b74c19d
+// POST add a track to playlist (Handles both NEW and EXISTING tracks)
 app.post('/api/v1/playlists/:id/tracks', async (req, res) => {
   try {
     const playlist = await Playlist.findById(req.params.id);
     if (!playlist) return res.status(404).json({ message: 'Playlist not found' });
 
     let trackIdToAdd;
-    let trackDetails; // Will hold the created or existing track document
+    let trackDetails; 
 
-    // Case 1: Client provides details (title) to CREATE a new Track
+    // Case 1: provides details (title) to CREATE a new Track
     if (req.body.title) {
-      // Check if title is provided but trackId is also provided, which is ambiguous
       if (req.body.trackId) {
         return res.status(400).json({ message: 'Cannot provide both track details (like title) and an existing trackId.' });
       }
@@ -255,9 +242,8 @@ app.post('/api/v1/playlists/:id/tracks', async (req, res) => {
       trackDetails = await newTrack.save();
       trackIdToAdd = trackDetails._id;
       
-    // Case 2: Client provides an ID to ADD an EXISTING Track
+    // Case 2: provides an ID to ADD an EXISTING Track
     } else if (req.body.trackId) {
-      // Validate the ID is a valid MongoDB ObjectId format
       if (!mongoose.Types.ObjectId.isValid(req.body.trackId)) {
         return res.status(400).json({ message: 'Invalid existing trackId format.' });
       }
@@ -265,59 +251,20 @@ app.post('/api/v1/playlists/:id/tracks', async (req, res) => {
       trackIdToAdd = req.body.trackId;
       trackDetails = await Track.findById(trackIdToAdd);
       
-      // Check if the Track actually exists
       if (!trackDetails) {
         return res.status(404).json({ message: 'The existing trackId provided does not correspond to a Track document.' });
       }
-
-<<<<<<< HEAD
-    // Case 3: Neither ID nor details provided (Error)
-=======
-    // 2. Prevent duplicates (optional, but good practice)
-    const isDuplicate = playlist.tracks.some(t => t.trackId.toString() === trackId);
-    if (isDuplicate) return res.status(400).json({ message: 'Track already exists in this playlist.' });
-
-    // 3. Add the track reference
-    playlist.tracks.push({ trackId: trackId, order: playlist.tracks.length + 1 });
-    await playlist.save();
-
-    res.status(201).json({ 
-        message: 'Track added to playlist',
-        trackId: trackId
-    });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-// PUT update track details in playlist (e.g., order)
-app.put('/api/v1/playlists/:id/tracks/:trackId', async (req, res) => {
-  try {
-    const { order } = req.body;
-
-    const playlist = await Playlist.findById(req.params.id);
-    if (!playlist) return res.status(404).json({ message: 'Playlist not found' });
-
-    const trackItem = playlist.tracks.find(t => t.trackId.toString() === req.params.trackId);
-    if (!trackItem) return res.status(404).json({ message: 'Track not found in playlist' });
-
-    // Only update order (or other playlist-specific metadata like 'metadata')
-    if (order !== undefined) {
-        trackItem.order = order;
->>>>>>> 3fc3875c6242ece4fbf8b68cc5c226c45b74c19d
     } else {
       return res.status(400).json({ message: 'Missing trackId (to add existing) or track details (like title) to create a new track.' });
     }
 
-    // Final check to ensure we have an ID to push
-    if (!trackIdToAdd) {
-        // This should theoretically not be reached, but is a good safeguard
-        return res.status(500).json({ message: 'A valid Track ID could not be determined or created.' });
-    }
+    // Check for duplicates in playlist
+    const isDuplicate = playlist.tracks.some(t => t.trackId.toString() === trackIdToAdd.toString());
+    if (isDuplicate) return res.status(400).json({ message: 'Track already exists in this playlist.' });
 
-    // Add the determined track ID to the playlist
+    // Add to playlist
     const trackEntry = { 
       trackId: trackIdToAdd, 
-      // Set the order to the next position
       order: playlist.tracks.length + 1 
     };
     
@@ -325,16 +272,12 @@ app.put('/api/v1/playlists/:id/tracks/:trackId', async (req, res) => {
     playlist.updatedAt = Date.now();
     await playlist.save();
 
-    // Respond with the track details that were added/created
     res.status(201).json({ message: 'Track successfully added/created and linked to playlist.', track: trackDetails });
     
   } catch (err) {
-    // Check for Mongoose Validation errors during new Track creation
     if (err.name === 'ValidationError') {
-        // If the error is from missing a required field (like 'title' if creating)
         return res.status(400).json({ message: err.message });
     }
-    // Catch all other server errors
     console.error('Error adding track:', err);
     res.status(500).json({ message: 'An internal server error occurred while adding the track.' });
   }
@@ -355,10 +298,9 @@ app.put('/api/v1/playlists/:id/tracks/:trackId', async (req, res) => {
     if (req.body.addedAt !== undefined) updates.addedAt = req.body.addedAt;
 
     Object.assign(trackItem, updates);
-    playlist.updatedAt = Date.now(); // Update the playlist timestamp too
+    playlist.updatedAt = Date.now(); 
     await playlist.save();
     
-    // Fetch the full track details for the response
     const populatedTrack = await Playlist.populate(trackItem, { path: 'trackId' });
 
     res.json({ 
@@ -376,7 +318,6 @@ app.delete('/api/v1/playlists/:id/tracks/:trackId', async (req, res) => {
     const playlist = await Playlist.findById(req.params.id);
     if (!playlist) return res.status(404).json({ message: 'Playlist not found' });
 
-    // Use $pull to remove the item from the array where the trackId matches
     const originalLength = playlist.tracks.length;
     
     playlist.tracks = playlist.tracks.filter(t => t.trackId.toString() !== req.params.trackId);
@@ -444,13 +385,22 @@ app.delete('/api/v1/playback/:id', async (req, res) => {
 // ====== Connect to MongoDB Atlas ======
 async function startServer() {
   try {
-    // NOTE: MongoDB connection must be successful for this to run
+    if(!process.env.MONGODB_URI) {
+        console.error("❌ Error: MONGODB_URI is not defined in environment variables.");
+        return;
+    }
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Connected to MongoDB Atlas');
+    
     app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
   } catch (err) {
     console.error('❌ Failed to connect:', err.message);
   }
 }
 
-startServer();  
+// Export for Vercel
+module.exports = app;
+
+if (require.main === module) {
+    startServer();
+}
