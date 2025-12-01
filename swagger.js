@@ -180,7 +180,47 @@ const swaggerDefinition = {
         responses: { 201: { description: 'Record saved' } },
       },
     },
+
+      //-- PLAYBACK :id ---
+      '/api/v1/playback/{id}': {
+      put: {
+        summary: 'Update playback state',
+        description: 'Update the position and playing status of a playback session.',
+        tags: ['Playback'],
+        parameters: [
+          { in: 'path', name: 'id', schema: { type: 'string' }, required: true, description: 'Playback Record ID' }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  position: { type: 'integer', description: 'Current playback position in seconds' },
+                  isPlaying: { type: 'boolean', description: 'Whether the track is currently playing' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Playback updated successfully' },
+          404: { description: 'Playback record not found' },
+        },
+      },
+      delete: {
+        summary: 'Delete playback record',
+        tags: ['Playback'],
+        parameters: [
+          { in: 'path', name: 'id', schema: { type: 'string' }, required: true, description: 'Playback Record ID' }
+        ],
+        responses: {
+          200: { description: 'Playback record deleted successfully' },
+          404: { description: 'Playback record not found' },
+        },
+      },
+    },
   },
 };
-
 module.exports = swaggerDefinition;
