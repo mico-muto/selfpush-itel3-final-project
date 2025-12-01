@@ -17,8 +17,13 @@ app.use(cors());
 app.use(express.json());
 app.use(helmet());
 
-// Docs Route
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use(
+  helmet.hsts({
+    maxAge: 31536000, 
+    includeSubDomains: true,
+    preload: true
+  })
+);
 
 // CSP Configuration (Strict for an API)
 app.use(
