@@ -13,7 +13,7 @@ const helmet = require('helmet');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 // ====== Middleware ======
 app.use(cors());
 app.use(express.json());
@@ -35,9 +35,9 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'"],
-      imgSrc: ["'self'", "data:"],
+      scriptSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+      styleSrc: ["'self'", "https://cdnjs.cloudflare.com", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https://validator.swagger.io"],
       connectSrc: ["'self'"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
@@ -45,6 +45,19 @@ app.use(
   })
 );
 
+//CDN Swagger
+app.use(
+    '/api-docs', 
+    swaggerUi.serve, 
+    swaggerUi.setup(swaggerSpec, {
+        customCssUrl: CSS_URL,
+        customSiteTitle: "Music Playlist API Docs",
+        customJs: [
+            "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui-bundle.min.js",
+            "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui-standalone-preset.min.js"
+        ]
+    })
+);
 
 // ====== Mongoose Schemas & Models ======
 
