@@ -7,19 +7,10 @@ const swaggerDefinition = {
     version: '1.0.0',
     description: 'Swagger documentation for the Music Playlist API',
   },
-  servers: [
-    {
-      url: 'http://localhost:3000',
-    },
-    {
-      url: 'https://itel3-final-deployment.vercel.app/',
-    }, 
-  ],
 };
-
 const options = {
   swaggerDefinition,
-  apis: ['./server.js', "./routes/*.js"],
+  apis: ['./server.js'],
 };
 
 module.exports = swaggerJSDoc(options);
