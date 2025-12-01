@@ -7,6 +7,8 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
 const helmet = require('helmet');
 
 const app = express();
@@ -16,6 +18,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
+
+// Docs Route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(
   helmet.hsts({
@@ -143,12 +148,6 @@ app.delete('/api/v1/tracks/:id', async (req, res) => {
     try {
         const track = await Track.findByIdAndDelete(req.params.id);
         if (!track) return res.status(404).json({ message: 'Track not found' });
-        
-        // OPTIONAL: Clean up references in all playlists where this track exists
-        // await Playlist.updateMany(
-        //     { 'tracks.trackId': req.params.id },
-        //     { $pull: { tracks: { trackId: req.params.id } } }
-        // );
 
         res.json({ message: 'Track deleted' });
     } catch (err) {
@@ -232,7 +231,6 @@ app.get('/api/v1/playlists/:id/tracks', async (req, res) => {
 });
 
 // POST add an EXISTING track to playlist 
-// Expects: { "trackId": "60c72b9f9b1d9c1b7c1e5f8a" } in req.body
 app.post('/api/v1/playlists/:id/tracks', async (req, res) => {
   try {
     const { trackId } = req.body;
@@ -261,10 +259,7 @@ app.post('/api/v1/playlists/:id/tracks', async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
-
-// PUT update track details (order only on the playlist reference)
-// The original code tried to use Object.assign(trackItem, req.body), 
-// which is a bit broad. This is simplified to explicitly handle 'order'.
+// PUT update track details in playlist (e.g., order)
 app.put('/api/v1/playlists/:id/tracks/:trackId', async (req, res) => {
   try {
     const { order } = req.body;
