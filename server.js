@@ -7,6 +7,8 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
 const helmet = require('helmet');
 
 const app = express();
@@ -16,6 +18,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
+
+// Docs Route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(
   helmet.hsts({
@@ -88,7 +93,72 @@ const Playback = mongoose.model('Playback', PlaybackSchema);
 app.get('/', (req, res) => res.send('✅ Playlist API is running!'));
 
 // ==============================
+<<<<<<< HEAD
 // PLAYLIST ROUTES
+=======
+// TRACK ROUTES 🎶 (New Dedicated Section)
+// ==============================
+
+// GET all tracks
+app.get('/api/v1/tracks', async (req, res) => {
+    try {
+        // Option to add search/filter logic here if needed
+        const tracks = await Track.find(); 
+        res.json(tracks);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// GET one track by ID
+app.get('/api/v1/tracks/:id', async (req, res) => {
+    try {
+        const track = await Track.findById(req.params.id);
+        if (!track) return res.status(404).json({ message: 'Track not found' });
+        res.json(track);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// POST create a new track (Track now exists independently)
+app.post('/api/v1/tracks', async (req, res) => {
+    try {
+        const track = new Track(req.body);
+        await track.save();
+        res.status(201).json(track);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// PUT update track details
+app.put('/api/v1/tracks/:id', async (req, res) => {
+    try {
+        const track = await Track.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!track) return res.status(404).json({ message: 'Track not found' });
+        res.json(track);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// DELETE a track (Might break playlists, but for now, simple delete)
+app.delete('/api/v1/tracks/:id', async (req, res) => {
+    try {
+        const track = await Track.findByIdAndDelete(req.params.id);
+        if (!track) return res.status(404).json({ message: 'Track not found' });
+
+        res.json({ message: 'Track deleted' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
+// ==============================
+// PLAYLIST ROUTES 🎧
+>>>>>>> 3fc3875c6242ece4fbf8b68cc5c226c45b74c19d
 // ==============================
 
 // GET all playlists (optionally by user)
@@ -161,7 +231,11 @@ app.get('/api/v1/playlists/:id/tracks', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // POST add a new track to playlist (MODIFIED FOR FLEXIBILITY)
+=======
+// POST add an EXISTING track to playlist 
+>>>>>>> 3fc3875c6242ece4fbf8b68cc5c226c45b74c19d
 app.post('/api/v1/playlists/:id/tracks', async (req, res) => {
   try {
     const playlist = await Playlist.findById(req.params.id);
@@ -196,7 +270,40 @@ app.post('/api/v1/playlists/:id/tracks', async (req, res) => {
         return res.status(404).json({ message: 'The existing trackId provided does not correspond to a Track document.' });
       }
 
+<<<<<<< HEAD
     // Case 3: Neither ID nor details provided (Error)
+=======
+    // 2. Prevent duplicates (optional, but good practice)
+    const isDuplicate = playlist.tracks.some(t => t.trackId.toString() === trackId);
+    if (isDuplicate) return res.status(400).json({ message: 'Track already exists in this playlist.' });
+
+    // 3. Add the track reference
+    playlist.tracks.push({ trackId: trackId, order: playlist.tracks.length + 1 });
+    await playlist.save();
+
+    res.status(201).json({ 
+        message: 'Track added to playlist',
+        trackId: trackId
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+// PUT update track details in playlist (e.g., order)
+app.put('/api/v1/playlists/:id/tracks/:trackId', async (req, res) => {
+  try {
+    const { order } = req.body;
+
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) return res.status(404).json({ message: 'Playlist not found' });
+
+    const trackItem = playlist.tracks.find(t => t.trackId.toString() === req.params.trackId);
+    if (!trackItem) return res.status(404).json({ message: 'Track not found in playlist' });
+
+    // Only update order (or other playlist-specific metadata like 'metadata')
+    if (order !== undefined) {
+        trackItem.order = order;
+>>>>>>> 3fc3875c6242ece4fbf8b68cc5c226c45b74c19d
     } else {
       return res.status(400).json({ message: 'Missing trackId (to add existing) or track details (like title) to create a new track.' });
     }
